@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   createAdminBus,
   createAdminRoute,
@@ -34,7 +35,22 @@ const DEFAULT_SCHEDULE_FORM = {
   availableSeats: "",
 };
 
+const getCurrentDate = () => {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split("T")[0];
+};
+
+const getCurrentTime = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+};
+
 function AdminDashboardPage() {
+  const navigate = useNavigate();
+  const currentDate = getCurrentDate();
+  const currentTime = getCurrentTime();
   const admin = getStoredUser();
   const [dashboard, setDashboard] = useState({
     adminName: "",
@@ -54,6 +70,7 @@ function AdminDashboardPage() {
     () => dashboard.buses.find((bus) => String(bus.id) === String(scheduleForm.busId)) || null,
     [dashboard.buses, scheduleForm.busId]
   );
+  const isTodaySchedule = scheduleForm.travelDate === currentDate;
 
   useEffect(() => {
     loadDashboard();
@@ -174,6 +191,21 @@ function AdminDashboardPage() {
   const handleCreateSchedule = async (event) => {
     event.preventDefault();
 
+    if (scheduleForm.travelDate < currentDate) {
+      setError("Travel date cannot be in the past.");
+      return;
+    }
+
+    if (scheduleForm.travelDate === currentDate && scheduleForm.departureTime < currentTime) {
+      setError("Departure time cannot be in the past for today's schedule.");
+      return;
+    }
+
+    if (scheduleForm.arrivalTime <= scheduleForm.departureTime) {
+      setError("Arrival time must be later than departure time.");
+      return;
+    }
+
     try {
       setSubmitting(true);
       setError("");
@@ -236,6 +268,13 @@ function AdminDashboardPage() {
     <>
       <Navbar />
       <div className="page-container">
+        <div className="page-actions">
+          <h1 className="page-title">Admin Dashboard</h1>
+          <button className="btn btn-secondary" type="button" onClick={() => navigate("/search")}>
+            Back to Search
+          </button>
+        </div>
+
         <div className="hero-card">
           <div>
             <p className="eyebrow">Admin</p>
@@ -404,6 +443,7 @@ function AdminDashboardPage() {
                       className="form-input"
                       name="travelDate"
                       type="date"
+                      min={currentDate}
                       value={scheduleForm.travelDate}
                       onChange={handleScheduleChange}
                       required
@@ -431,6 +471,7 @@ function AdminDashboardPage() {
                       className="form-input"
                       name="departureTime"
                       type="time"
+                      min={isTodaySchedule ? currentTime : undefined}
                       value={scheduleForm.departureTime}
                       onChange={handleScheduleChange}
                       required

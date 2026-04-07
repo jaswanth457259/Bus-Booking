@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { cancelBooking, fetchMyBookings } from "../api/api";
 import Navbar from "../components/Navbar";
 import { getStoredUser } from "../utils/auth";
 
 function MyBookingsPage() {
+  const navigate = useNavigate();
   const user = getStoredUser();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,12 @@ function MyBookingsPage() {
     <>
       <Navbar />
       <div className="page-container">
-        <h1 className="page-title">My Bookings</h1>
+        <div className="page-actions">
+          <h1 className="page-title">My Bookings</h1>
+          <button className="btn btn-secondary" type="button" onClick={() => navigate("/search")}>
+            Back to Search
+          </button>
+        </div>
         {error && <div className="alert alert-error">{error}</div>}
 
         {loading && <p className="loading-text">Loading your bookings...</p>}

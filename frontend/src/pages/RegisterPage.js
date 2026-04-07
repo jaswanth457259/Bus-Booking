@@ -17,6 +17,15 @@ function RegisterPage() {
   const redirectPath = location.state?.from || "/search";
   const redirectState = location.state?.bookingState;
 
+  const handleBackToLogin = () => {
+    navigate("/login", {
+      state: {
+        from: redirectPath,
+        bookingState: redirectState,
+      },
+    });
+  };
+
   if (getStoredUser()) {
     return <Navigate to={redirectPath} state={redirectState} replace />;
   }
@@ -58,6 +67,11 @@ function RegisterPage() {
   return (
     <div className="auth-shell">
       <div className="auth-card">
+        <div className="button-row">
+          <button className="btn btn-secondary" type="button" onClick={handleBackToLogin}>
+            Back to Login
+          </button>
+        </div>
         <h1 className="page-title">Register</h1>
         <p className="muted-text">
           {redirectState

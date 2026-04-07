@@ -16,6 +16,9 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const redirectPath = location.state?.from || "/search";
   const redirectState = location.state?.bookingState;
+  const backPath = redirectState?.schedule?.scheduleId
+    ? `/seats/${redirectState.schedule.scheduleId}`
+    : "/search";
 
   if (getStoredUser()) {
     return <Navigate to={redirectPath} state={redirectState} replace />;
@@ -55,6 +58,11 @@ function LoginPage() {
   return (
     <div className="auth-shell">
       <div className="auth-card">
+        <div className="button-row">
+          <button className="btn btn-secondary" type="button" onClick={() => navigate(backPath)}>
+            Back
+          </button>
+        </div>
         <h1 className="page-title">Login</h1>
         <p className="muted-text">
           {redirectState

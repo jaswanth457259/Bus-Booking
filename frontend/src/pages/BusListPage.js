@@ -7,6 +7,7 @@ function BusListPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [results, setResults] = useState([]);
+  const [busTypeFilter, setBusTypeFilter] = useState("ALL");
   const [busDetailsById, setBusDetailsById] = useState({});
   const [expandedBusId, setExpandedBusId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -21,6 +22,21 @@ function BusListPage() {
     }),
     [searchParams]
   );
+
+  const availableBusTypes = useMemo(() => {
+    const types = new Set(results.map((item) => item.busType).filter(Boolean));
+    return Array.from(types);
+  }, [results]);
+
+  const displayedResults = useMemo(() => {
+    let filtered = [...results];
+
+    if (busTypeFilter !== "ALL") {
+      filtered = filtered.filter((item) => item.busType === busTypeFilter);
+    }
+
+    return filtered;
+  }, [results, busTypeFilter]);
 
   useEffect(() => {
     async function loadResults() {
@@ -90,9 +106,43 @@ function BusListPage() {
 
         {error && <div className="alert alert-error">{error}</div>}
 
+        {!loading && results.length > 0 && (
+          <div className="card filters-panel">
+            <div className="form-grid filters-grid">
+              <label className="form-group">
+                <span className="form-label">Filter by Bus Type</span>
+                <select
+                  className="form-input"
+                  value={busTypeFilter}
+                  onChange={(event) => setBusTypeFilter(event.target.value)}
+                >
+                  <option value="ALL">All Types</option>
+                  {availableBusTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="button-row">
+              <button
+                className="btn btn-secondary"
+                type="button"
+                onClick={() => {
+                  setBusTypeFilter("ALL");
+                }}
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        )}
+
         {loading && <p className="loading-text">Loading buses...</p>}
 
-        {!loading && results.length === 0 && (
+        {!loading && displayedResults.length === 0 && (
           <div className="card empty-state">
             <h2 className="section-title">No buses found</h2>
             <p className="muted-text">Try a different route or travel date.</p>
@@ -100,7 +150,7 @@ function BusListPage() {
         )}
 
         {!loading &&
-          results.map((bus) => {
+          displayedResults.map((bus) => {
             const busDetails = busDetailsById[bus.busId];
 
             return (

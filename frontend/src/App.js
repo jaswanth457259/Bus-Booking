@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Navigate, Route, Routes } from "react-router-dom";
 import AdminRoute from "./components/AdminRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -12,11 +12,36 @@ import SearchBusesPage from "./pages/SearchBusesPage";
 import SeatSelectionPage from "./pages/SeatSelectionPage";
 import "./styles/global.css";
 
+const THEME_STORAGE_KEY = "bus-booking-theme";
+
+const getInitialTheme = () => {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  if (savedTheme === "dark" || savedTheme === "light") {
+    return savedTheme;
+  }
+
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+};
+
 function App() {
   const defaultRoute = "/search";
+  const [theme, setTheme] = useState(getInitialTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   return (
     <Router>
+      <button
+        className="theme-toggle-fab"
+        type="button"
+        onClick={() => setTheme((previous) => (previous === "dark" ? "light" : "dark"))}
+      >
+        {theme === "dark" ? "Switch to Light" : "Switch to Dark"}
+      </button>
+
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

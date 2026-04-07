@@ -2,8 +2,14 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
+const getTodayDate = () => {
+  const now = new Date();
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().split("T")[0];
+};
+
 function SearchBusesPage() {
   const navigate = useNavigate();
+  const todayDate = getTodayDate();
   const [filters, setFilters] = useState({
     source: "",
     destination: "",
@@ -27,6 +33,11 @@ function SearchBusesPage() {
       return;
     }
 
+    if (filters.date < todayDate) {
+      setError("Travel date cannot be in the past.");
+      return;
+    }
+
     setError("");
     const query = new URLSearchParams(filters).toString();
     navigate(`/buses?${query}`);
@@ -43,6 +54,9 @@ function SearchBusesPage() {
             <p className="muted-text">
               Find the right schedule, compare timings, and continue to seat selection.
             </p>
+          </div>
+          <div className="hero-visual">
+            <img src="/images/bus-hero.svg" alt="Bus travel illustration" />
           </div>
         </div>
 
@@ -85,6 +99,7 @@ function SearchBusesPage() {
                 className="form-input"
                 name="date"
                 type="date"
+                min={todayDate}
                 value={filters.date}
                 onChange={handleChange}
                 required
