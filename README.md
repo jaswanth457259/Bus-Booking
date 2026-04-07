@@ -1,23 +1,42 @@
 # Bus-Booking
 
-Bus Booking Application project with a Spring Boot backend under `backend/`.
+Bus Booking full-stack application with a Spring Boot backend in `backend/` and a React frontend in `frontend/`.
 
-## Current Scope
+## Current Project Scope
 
-This repository currently contains the Member 1 backend implementation:
+This repository now contains the combined work of all members across backend and frontend.
 
-- Spring Boot 3 backend setup with Java 17 and Maven
-- MySQL configuration with `ddl-auto=update`
-- Layered architecture: controller, service, repository, entity, dto, exception, config
-- User registration and login APIs
-- Bus search API by source, destination, and travel date
-- Bus details API
+Backend highlights:
+
+- Spring Boot 3 setup with Java 17 and Maven
+- MySQL configuration with JPA (`ddl-auto=update`)
+- Layered architecture (`controller`, `service`, `repository`, `entity`, `dto`, `exception`, `config`)
+- Authentication module (register/login)
+- Bus search and bus details APIs
 - Schedule seat availability API
-- Global exception handling
-- Basic SLF4J logging
-- Sample seed data for buses, routes, and schedules
+- Booking creation, cancellation, and booking history APIs
+- Admin management APIs (bus/route/schedule operations)
+- Global exception handling and SLF4J logging
+- Seed data initialization for routes, buses, schedules
+
+Frontend highlights:
+
+- Route-based app with login/register/search/list/seat-selection/confirmation/my-bookings/admin screens
+- Shared API layer (`frontend/src/api/api.js`)
+- Shared navbar and protected/admin routing
+- Dark and light theme toggle (persistent)
+- Enhanced UI with visual assets and responsive styles
+- Back-button navigation improvements across key pages
+- Bus type filter (AC/NON_AC/SLEEPER) in bus listing
+- Date/time validations to block past dates and invalid time selections
+
+Build status:
+
+- `frontend`: `npm run build` compiles successfully
 
 ## Tech Stack
+
+Backend:
 
 - Java 17
 - Spring Boot 3
@@ -27,12 +46,18 @@ This repository currently contains the Member 1 backend implementation:
 - Lombok
 - Maven
 
+Frontend:
+
+- React 18
+- React Router
+- Axios
+- CSS
+
 ## Project Structure
 
 ```text
 backend/
   pom.xml
-  POSTMAN_REQUESTS.md
   src/main/java/com/busbooking/
     config/
     controller/
@@ -43,96 +68,121 @@ backend/
     service/
   src/main/resources/
     application.properties
+
+frontend/
+  package.json
+  public/
+  src/
+    api/
+    components/
+    pages/
+    styles/
+    utils/
 ```
-
-## Frontend Status
-
-The repository also contains a React frontend under `frontend/`.
-
-Current frontend work includes:
-
-- booking pages under `frontend/src/pages`
-- a shared API helper in `frontend/src/api/api.js`
-- a shared navbar in `frontend/src/components/Navbar.js`
-
-Frontend build check:
-
-- `npm run build` completes successfully
-
-Frontend note:
-
-- the current booking UI compiles, but it still needs final API contract alignment with the Spring Boot backend
 
 ## Implemented APIs
 
+Auth:
+
 - `POST /api/auth/register`
 - `POST /api/auth/login`
+
+Bus & Schedule:
+
 - `GET /api/buses/search?source=&destination=&date=`
 - `GET /api/buses/{id}`
 - `GET /api/schedules/{id}/seats`
 
-Sample request collection is available in `backend/POSTMAN_REQUESTS.md`.
+Booking:
+
+- `POST /api/bookings`
+- `GET /api/bookings/my?userId={id}`
+- `GET /api/bookings/{id}`
+- `DELETE /api/bookings/{id}/cancel`
+
+Admin:
+
+- Dashboard and management APIs for bus/route/schedule modules
 
 ## Local Setup
 
-1. Create a MySQL database or let Spring create it automatically.
-2. Update database credentials in `backend/src/main/resources/application.properties`.
-3. Open the `backend` folder in your IDE.
-4. Install Maven if it is not already installed on your system.
-5. Run the Spring Boot application.
+### Backend
+
+1. Create MySQL database (or let Spring create it automatically).
+2. Update credentials in `backend/src/main/resources/application.properties`.
+3. Run:
+
+```bash
+cd backend
+mvn clean spring-boot:run
+```
+
+### Frontend
+
+1. Install dependencies and run:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### Build Frontend
+
+```bash
+cd frontend
+npm run build
+```
 
 ## Default Database Config
-
-The current backend uses:
 
 - Database: `bus_booking_db`
 - Username: `root`
 - Password: `root`
 
-Change these values before running if your local MySQL setup is different.
+Change values based on your local MySQL setup.
 
 ## Seeded Test Data
 
-The backend inserts sample buses, routes, and schedules on first run, including:
+Inserted on first run:
 
 - `Chennai -> Bengaluru`
 - `Bengaluru -> Hyderabad`
 
-## Team Split
+## Team Members and Roles
 
-Member 1 owns:
+### Member 1 (Backend Core)
 
-- project setup
-- auth module
-- bus, route, and schedule modules
-- search and read APIs
+- Initial project setup
+- Authentication module
+- Bus/route/schedule entities and APIs
+- Search and read workflows
+- Core exception handling and backend structure
 
-Member 2 will add:
+### Member 2 (Backend Booking and Admin)
 
-- booking entity and repository
-- booking, cancellation, and booking history APIs
-- seat allocation logic tied to bookings
+- Booking entity, repository, service, controller
+- Booking create/cancel/history flow
+- Seat allocation and booking validation logic
+- Admin dashboard and master-data management APIs
 
-## Frontend Team Split
+### Member 3 (Frontend Booking Flow)
 
-Frontend Member 3 currently covers:
+- Seat selection page
+- Booking confirmation flow
+- My bookings page
+- Cancel booking UI flow
 
-- seat selection UI
-- booking confirmation UI
-- my bookings UI
-- cancel booking UI flow
+### Member 4 (Frontend App Integration and UX)
 
-Frontend Member 4 should own:
+- Login and register pages
+- Search and bus list pages
+- Routing and protected/admin navigation
+- Local storage session handling
+- UI enhancements (theme support, visuals, filters, validation improvements)
+- Cross-page integration and final UX polish
 
-- login and register pages
-- search buses page
-- bus list page
-- frontend routing integration across all pages
-- localStorage user/session handling
-- API request and response alignment with backend endpoints
-- final UI cleanup and cross-page testing
-
-Recommended frontend routes:
+## Frontend Routes
 
 - `/login`
 - `/register`
@@ -141,8 +191,9 @@ Recommended frontend routes:
 - `/seats/:scheduleId`
 - `/confirm-booking`
 - `/my-bookings`
+- `/admin`
 
 ## Notes
 
-- Authentication is intentionally simple for now and does not use JWT.
-- The current `/api/schedules/{id}/seats` endpoint returns seat counts, not a seat-by-seat map.
+- Authentication is currently simple and does not use JWT.
+- Seat API supports seat availability and seat status used in booking flow.
