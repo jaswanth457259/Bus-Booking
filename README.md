@@ -115,14 +115,14 @@ Member 2 will add:
 
 ## Frontend Team Split
 
-Frontend Member 2 currently covers:
+Frontend Member 3 currently covers:
 
 - seat selection UI
 - booking confirmation UI
 - my bookings UI
 - cancel booking UI flow
 
-Frontend Member 3 should own:
+Frontend Member 4 should own:
 
 - login and register pages
 - search buses page
