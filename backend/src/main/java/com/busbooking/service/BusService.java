@@ -4,14 +4,21 @@ import com.busbooking.dto.response.BusDetailsResponse;
 import com.busbooking.dto.response.BusSearchResponse;
 import com.busbooking.dto.response.ScheduleSeatAvailabilityResponse;
 import com.busbooking.dto.response.ScheduleSummaryResponse;
+import com.busbooking.dto.response.SeatStatusResponse;
+import com.busbooking.entity.Booking;
 import com.busbooking.entity.Bus;
 import com.busbooking.entity.Schedule;
+import com.busbooking.entity.enums.BookingStatus;
 import com.busbooking.exception.BadRequestException;
 import com.busbooking.exception.ResourceNotFoundException;
+import com.busbooking.repository.BookingRepository;
 import com.busbooking.repository.BusRepository;
 import com.busbooking.repository.ScheduleRepository;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +32,7 @@ public class BusService {
 
     private static final Logger logger = LoggerFactory.getLogger(BusService.class);
 
+    private final BookingRepository bookingRepository;
     private final BusRepository busRepository;
     private final ScheduleRepository scheduleRepository;
 
@@ -74,7 +82,9 @@ public class BusService {
 
         int totalSeats = schedule.getBus().getTotalSeats();
         int availableSeats = schedule.getAvailableSeats();
-        int bookedSeats = totalSeats - availableSeats;
+        Set<Integer> bookedSeatNumbers = getBookedSeatNumbers(scheduleId);
+        int bookedSeats = bookedSeatNumbers.size();
+        List<SeatStatusResponse> seats = buildSeatLayout(totalSeats, bookedSeatNumbers);
 
         logger.info("Fetched seat availability for schedule id {}", scheduleId);
 
@@ -83,12 +93,16 @@ public class BusService {
                 .busId(schedule.getBus().getId())
                 .busName(schedule.getBus().getBusName())
                 .busNumber(schedule.getBus().getBusNumber())
+                .source(schedule.getRoute().getSource())
+                .destination(schedule.getRoute().getDestination())
                 .travelDate(schedule.getTravelDate())
                 .departureTime(schedule.getDepartureTime())
                 .arrivalTime(schedule.getArrivalTime())
+                .fare(schedule.getFare())
                 .totalSeats(totalSeats)
                 .availableSeats(availableSeats)
                 .bookedSeats(bookedSeats)
+                .seats(seats)
                 .build();
     }
 
@@ -120,5 +134,45 @@ public class BusService {
                 .fare(schedule.getFare())
                 .availableSeats(schedule.getAvailableSeats())
                 .build();
+    }
+
+    private Set<Integer> getBookedSeatNumbers(Long scheduleId) {
+        List<Booking> confirmedBookings = bookingRepository.findByScheduleIdAndStatus(scheduleId, BookingStatus.CONFIRMED);
+        Set<Integer> bookedSeatNumbers = new LinkedHashSet<>();
+
+        for (Booking booking : confirmedBookings) {
+            if (booking.getSeatNumbers() == null || booking.getSeatNumbers().isBlank()) {
+                continue;
+            }
+
+            for (String token : booking.getSeatNumbers().split(",")) {
+                String trimmedToken = token.trim();
+                if (trimmedToken.isEmpty()) {
+                    continue;
+                }
+
+                try {
+                    bookedSeatNumbers.add(Integer.parseInt(trimmedToken));
+                } catch (NumberFormatException ex) {
+                    logger.warn("Skipping invalid stored seat number '{}' for booking {}", trimmedToken, booking.getId());
+                }
+            }
+        }
+
+        return bookedSeatNumbers;
+    }
+
+    private List<SeatStatusResponse> buildSeatLayout(int totalSeats, Set<Integer> bookedSeatNumbers) {
+        List<SeatStatusResponse> seats = new ArrayList<>();
+
+        for (int seatNumber = 1; seatNumber <= totalSeats; seatNumber++) {
+            String status = bookedSeatNumbers.contains(seatNumber) ? "BOOKED" : "AVAILABLE";
+            seats.add(SeatStatusResponse.builder()
+                    .seatNumber(seatNumber)
+                    .status(status)
+                    .build());
+        }
+
+        return seats;
     }
 }

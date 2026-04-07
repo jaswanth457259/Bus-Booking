@@ -45,6 +45,24 @@ backend/
     application.properties
 ```
 
+## Frontend Status
+
+The repository also contains a React frontend under `frontend/`.
+
+Current frontend work includes:
+
+- booking pages under `frontend/src/pages`
+- a shared API helper in `frontend/src/api/api.js`
+- a shared navbar in `frontend/src/components/Navbar.js`
+
+Frontend build check:
+
+- `npm run build` completes successfully
+
+Frontend note:
+
+- the current booking UI compiles, but it still needs final API contract alignment with the Spring Boot backend
+
 ## Implemented APIs
 
 - `POST /api/auth/register`
@@ -94,6 +112,35 @@ Member 2 will add:
 - booking entity and repository
 - booking, cancellation, and booking history APIs
 - seat allocation logic tied to bookings
+
+## Frontend Team Split
+
+Frontend Member 2 currently covers:
+
+- seat selection UI
+- booking confirmation UI
+- my bookings UI
+- cancel booking UI flow
+
+Frontend Member 3 should own:
+
+- login and register pages
+- search buses page
+- bus list page
+- frontend routing integration across all pages
+- localStorage user/session handling
+- API request and response alignment with backend endpoints
+- final UI cleanup and cross-page testing
+
+Recommended frontend routes:
+
+- `/login`
+- `/register`
+- `/search`
+- `/buses`
+- `/seats/:scheduleId`
+- `/confirm-booking`
+- `/my-bookings`
 
 ## Notes
 

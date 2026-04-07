@@ -3,10 +3,13 @@ package com.busbooking.config;
 import com.busbooking.entity.Bus;
 import com.busbooking.entity.Route;
 import com.busbooking.entity.Schedule;
+import com.busbooking.entity.User;
 import com.busbooking.entity.enums.BusType;
+import com.busbooking.entity.enums.Role;
 import com.busbooking.repository.BusRepository;
 import com.busbooking.repository.RouteRepository;
 import com.busbooking.repository.ScheduleRepository;
+import com.busbooking.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,20 +19,28 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
 public class DataInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
+    private static final String DEFAULT_ADMIN_NAME = "System Admin";
+    private static final String DEFAULT_ADMIN_EMAIL = "admin@busbooking.com";
+    private static final String DEFAULT_ADMIN_PASSWORD = "Admin@123";
 
     private final BusRepository busRepository;
     private final RouteRepository routeRepository;
     private final ScheduleRepository scheduleRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Bean
     public CommandLineRunner seedMemberOneData() {
         return args -> {
+            seedAdminUser();
+
             if (busRepository.count() > 0 || routeRepository.count() > 0 || scheduleRepository.count() > 0) {
                 logger.info("Skipping sample data initialization because data already exists.");
                 return;
@@ -93,5 +104,21 @@ public class DataInitializer {
 
             logger.info("Sample routes, buses, and schedules inserted for Member 1 APIs.");
         };
+    }
+
+    private void seedAdminUser() {
+        if (userRepository.existsByEmailIgnoreCase(DEFAULT_ADMIN_EMAIL)) {
+            logger.info("Default admin account already exists.");
+            return;
+        }
+
+        userRepository.save(User.builder()
+                .name(DEFAULT_ADMIN_NAME)
+                .email(DEFAULT_ADMIN_EMAIL)
+                .password(passwordEncoder.encode(DEFAULT_ADMIN_PASSWORD))
+                .role(Role.ADMIN)
+                .build());
+
+        logger.info("Default admin account created with email {}", DEFAULT_ADMIN_EMAIL);
     }
 }

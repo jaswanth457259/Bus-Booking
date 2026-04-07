@@ -13,4 +13,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long> {
             LocalDate travelDate);
 
     List<Schedule> findByBusIdOrderByTravelDateAscDepartureTimeAsc(Long busId);
+
+    boolean existsByBusId(Long busId);
+
+    boolean existsByRouteId(Long routeId);
 }

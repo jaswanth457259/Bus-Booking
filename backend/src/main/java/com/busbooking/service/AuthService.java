@@ -34,7 +34,11 @@ public class AuthService {
             throw new BadRequestException("Email is already registered.");
         }
 
-        Role role = request.getRole() == null ? Role.USER : request.getRole();
+        if (request.getRole() != null && request.getRole() != Role.USER) {
+            logger.warn("Ignored non-user role {} during public registration for email {}", request.getRole(), normalizedEmail);
+        }
+
+        Role role = Role.USER;
 
         User user = User.builder()
                 .name(request.getName().trim())

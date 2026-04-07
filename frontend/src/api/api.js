@@ -1,45 +1,64 @@
-// src/api/api.js
-// All API calls are centralized here using axios
-
 import axios from "axios";
 
-// Base URL for your backend API — change this to your actual server URL
-const BASE_URL = "http://localhost:8080/api";
-
-// Create an axios instance with default settings
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: "http://localhost:8080/api",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Automatically attach token from localStorage to every request
-api.interceptors.request.use((config) => {
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  if (user.token) {
-    config.headers.Authorization = `Bearer ${user.token}`;
-  }
-  return config;
-});
+export const registerUser = (payload) => api.post("/auth/register", payload);
 
-// ─── Seat APIs ────────────────────────────────────────────────────────────────
+export const loginUser = (payload) => api.post("/auth/login", payload);
 
-// Fetch all seats for a given schedule
-export const fetchSeats = (scheduleId) =>
-  api.get(`/schedules/${scheduleId}/seats`);
+export const searchBuses = (params) => api.get("/buses/search", { params });
 
-// ─── Booking APIs ─────────────────────────────────────────────────────────────
+export const fetchBusDetails = (busId) => api.get(`/buses/${busId}`);
 
-// Create a new booking
-export const createBooking = (bookingData) =>
-  api.post("/bookings", bookingData);
+export const fetchSeats = (scheduleId) => api.get(`/schedules/${scheduleId}/seats`);
 
-// Get all bookings for the logged-in user
-export const fetchMyBookings = () => api.get("/bookings/my");
+export const createBooking = (payload) => api.post("/bookings", payload);
 
-// Cancel a booking by ID
-export const cancelBooking = (bookingId) =>
-  api.delete(`/bookings/${bookingId}/cancel`);
+export const fetchMyBookings = (userId) =>
+  api.get("/bookings/my", {
+    params: { userId },
+  });
+
+export const cancelBooking = (bookingId) => api.delete(`/bookings/${bookingId}/cancel`);
+
+export const fetchAdminDashboard = (adminUserId) =>
+  api.get("/admin/dashboard", {
+    params: { adminUserId },
+  });
+
+export const createAdminBus = (adminUserId, payload) =>
+  api.post("/admin/buses", payload, {
+    params: { adminUserId },
+  });
+
+export const deleteAdminBus = (adminUserId, busId) =>
+  api.delete(`/admin/buses/${busId}`, {
+    params: { adminUserId },
+  });
+
+export const createAdminRoute = (adminUserId, payload) =>
+  api.post("/admin/routes", payload, {
+    params: { adminUserId },
+  });
+
+export const deleteAdminRoute = (adminUserId, routeId) =>
+  api.delete(`/admin/routes/${routeId}`, {
+    params: { adminUserId },
+  });
+
+export const createAdminSchedule = (adminUserId, payload) =>
+  api.post("/admin/schedules", payload, {
+    params: { adminUserId },
+  });
+
+export const deleteAdminSchedule = (adminUserId, scheduleId) =>
+  api.delete(`/admin/schedules/${scheduleId}`, {
+    params: { adminUserId },
+  });
 
 export default api;
